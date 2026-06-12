@@ -48,21 +48,22 @@ export default class TabFilePathPlugin extends Plugin {
     setTabTitles() {
         const leaves = this.app.workspace.getLeavesOfType('markdown');
 
-        const leafFileNames = leaves.map(leaf => {
-            const path = this.getLeafName(leaf);
-            const parts = path.split('/').filter(Boolean);
-            return parts[parts.length - 1] ?? '';
+        // Every tab shows at least its parent folder ("proxmox-ve/creer-une-vm").
+        // Files at the vault root only have their own name.
+        const shortNames = leaves.map(leaf => {
+            const parts = this.getLeafName(leaf).split('/').filter(Boolean);
+            return parts.slice(-2).join('/');
         });
 
-        const fileNameCounts: Record<string, number> = {};
-        for (const name of leafFileNames) {
-            fileNameCounts[name] = (fileNameCounts[name] ?? 0) + 1;
+        const shortNameCounts: Record<string, number> = {};
+        for (const name of shortNames) {
+            shortNameCounts[name] = (shortNameCounts[name] ?? 0) + 1;
         }
 
+        // When two tabs still collide on "parent/name", fall back to the full path.
         leaves.forEach((leaf, ii) => {
-            if (fileNameCounts[leafFileNames[ii]] > 1) {
-                this.setLeafTitle(leaf, this.getLeafName(leaf));
-            }
+            const title = shortNameCounts[shortNames[ii]] > 1 ? this.getLeafName(leaf) : shortNames[ii];
+            this.setLeafTitle(leaf, title);
         });
     }
 
