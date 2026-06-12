@@ -5,6 +5,12 @@ import {
 } from 'obsidian';
 
 export default class TabFilePathPlugin extends Plugin {
+    setTabTitlesDebounced = debounce(this.setTabTitles.bind(this), 100);
+
+    // Leaves whose 'pinned-change' event is already hooked, so repeated
+    // setTabTitles() calls don't stack duplicate handlers on the same leaf.
+    pinHookedLeaves = new WeakSet<WorkspaceLeaf>();
+
     async onload() {
         // const workspaceEvents = [
         //     'active-leaf',
@@ -28,19 +34,17 @@ export default class TabFilePathPlugin extends Plugin {
         //     this.registerEvent(this.app.workspace.on(event, () => console.log(`event: ${event}`)))
         // });
 
-        const setTabTitlesDebounced = debounce(this.setTabTitles.bind(this), 100);
-
         // Modifying leaf.tabHeaderInnerTitleEl in response to a 'file-open'
         // event doesn't seem to cause the tab UI to refresh properly.
         // Inspecting the element in dev tools shows it's been modified, but the
         // Obsidian UI isn't refreshing to show it.  Reacting to 'layout-change'
         // seems to work though, but it happens more frequently, so we just
         // debounce it and move on with life.
-        this.registerEvent(this.app.workspace.on('layout-change', setTabTitlesDebounced));
+        this.registerEvent(this.app.workspace.on('layout-change', this.setTabTitlesDebounced));
 
         // Renaming a folder causes this to fire for all contained files, so
         // debounce this callback as well.
-        this.registerEvent(this.app.vault.on('rename', setTabTitlesDebounced));
+        this.registerEvent(this.app.vault.on('rename', this.setTabTitlesDebounced));
 
         this.setTabTitles();
     }
@@ -64,6 +68,15 @@ export default class TabFilePathPlugin extends Plugin {
         leaves.forEach((leaf, ii) => {
             const title = shortNameCounts[shortNames[ii]] > 1 ? this.getLeafName(leaf) : shortNames[ii];
             this.setLeafTitle(leaf, title);
+
+            // (Un)pinning re-renders the tab header with the default plain-text
+            // title, wiping the custom two-line markup — and it doesn't fire
+            // 'layout-change', so the titles must be re-applied from the
+            // leaf-level 'pinned-change' event.
+            if (!this.pinHookedLeaves.has(leaf)) {
+                this.pinHookedLeaves.add(leaf);
+                this.registerEvent(leaf.on('pinned-change', this.setTabTitlesDebounced));
+            }
         });
     }
 
