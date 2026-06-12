@@ -1,5 +1,31 @@
+/* Tab headers grow to fit the two-line titles. */
+.mod-root .workspace-tab-header-container {
+  height: auto;
+  min-height: var(--header-height);
+}
+
+.mod-root .workspace-tab-header {
+  height: auto;
+}
+
 .tab__title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.25;
+  padding: 2px 0;
+}
+
+/* Each line truncates at its end so the start of the text stays visible. */
+.tab__title-folder,
+.tab__title-name {
+  overflow: hidden;
   text-overflow: ellipsis;
-  unicode-bidi: normal;
-  direction: rtl;
+  white-space: nowrap;
+}
+
+.tab__title-folder {
+  font-size: 0.78em;
+  color: var(--text-muted);
 }

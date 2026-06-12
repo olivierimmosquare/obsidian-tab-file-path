@@ -87,7 +87,21 @@ export default class TabFilePathPlugin extends Plugin {
         //     leaf.view.titleContainerEl
         // }
         leaf.tabHeaderEl.setAttribute('aria-label', title);
-        leaf.tabHeaderInnerTitleEl.innerText = title;
-        leaf.tabHeaderInnerTitleEl.classList.add('tab__title');
+
+        // The tab title renders on two lines: folder path on top, file name
+        // below.  Each line truncates at its end (ellipsis) so the start of
+        // the text stays visible.  Files at the vault root only get the
+        // file name line.
+        const parts = title.split('/');
+        const fileName = parts.pop() ?? title;
+        const folderPath = parts.join('/');
+
+        const titleEl = leaf.tabHeaderInnerTitleEl;
+        titleEl.classList.add('tab__title');
+        titleEl.empty();
+        if (folderPath) {
+            titleEl.createDiv({ cls: 'tab__title-folder', text: folderPath });
+        }
+        titleEl.createDiv({ cls: 'tab__title-name', text: fileName });
     }
 }
