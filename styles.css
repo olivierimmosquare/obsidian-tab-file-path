@@ -54,3 +54,16 @@
 .mod-root .workspace-tab-header:has(.workspace-tab-header-status-icon.mod-pinned) .tab__title-name {
   font-size: 0.85em;
 }
+
+/* Search results: parent folder shown as a muted line above the file name,
+   mirroring the tab titles.  Truncates at the end so the folder name stays
+   readable from its start. */
+.search-result-file-folder {
+  display: block;
+  font-size: 0.75em;
+  line-height: 1.1;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
