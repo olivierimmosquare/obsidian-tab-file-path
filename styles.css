@@ -29,3 +29,28 @@
   font-size: 0.78em;
   color: var(--text-muted);
 }
+
+/* Pinned tabs are compact: the pin icon is replaced by an accent-colored
+   bar across the top of the tab, and the two-line title (folder path +
+   file name) renders smaller and tighter.  Unpinning stays available
+   through the tab context menu. */
+.mod-root .workspace-tab-header:has(.workspace-tab-header-status-icon.mod-pinned) {
+  box-shadow: inset 0 2px 0 0 var(--color-accent);
+}
+
+.mod-root .workspace-tab-header .workspace-tab-header-status-icon.mod-pinned {
+  display: none;
+}
+
+.mod-root .workspace-tab-header:has(.workspace-tab-header-status-icon.mod-pinned) .tab__title {
+  line-height: 1.15;
+  padding: 1px 0;
+}
+
+.mod-root .workspace-tab-header:has(.workspace-tab-header-status-icon.mod-pinned) .tab__title-folder {
+  font-size: 0.68em;
+}
+
+.mod-root .workspace-tab-header:has(.workspace-tab-header-status-icon.mod-pinned) .tab__title-name {
+  font-size: 0.85em;
+}
