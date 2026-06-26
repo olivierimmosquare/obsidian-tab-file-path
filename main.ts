@@ -46,6 +46,28 @@ export default class TabFilePathPlugin extends Plugin {
         // debounce this callback as well.
         this.registerEvent(this.app.vault.on('rename', this.setTabTitlesDebounced));
 
+        // Double-clicking a tab header toggles its pinned state.  This is
+        // the main affordance for (un)pinning since the pin icon is hidden
+        // by styles.css on pinned tabs.
+        //
+        // The tab bar doubles as the window title bar, where Obsidian maps
+        // double-click to maximizing the window.  Listening in the capture
+        // phase and stopping propagation keeps that behavior on the empty
+        // bar area only, not on the tabs themselves.
+        this.registerDomEvent(document, 'dblclick', (evt: MouseEvent) => {
+            const headerEl = (evt.target as HTMLElement).closest('.mod-root .workspace-tab-header');
+            if (!headerEl) {
+                return;
+            }
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.app.workspace.iterateAllLeaves((leaf) => {
+                if (leaf.tabHeaderEl === headerEl) {
+                    leaf.setPinned(!leaf.getViewState().pinned);
+                }
+            });
+        }, { capture: true });
+
         this.setTabTitles();
     }
 
